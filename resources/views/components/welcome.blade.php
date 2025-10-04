@@ -1,9 +1,8 @@
- @vite('resources/js/app.js')
 <script type="text/javascript"> 
-    // Adicionar campos dinâmicos se necessário
-    function adicionarCampoCusto() {
+// Adicionar campos dinâmicos se necessário
+ function adicionarCampoCusto() {
         const container = document.getElementById("custos-container");
-        const novoCusto = document.createElement("div");
+    const novoCusto = document.createElement("div");
         // Adicione uma classe para ajudar a função removerCampo a encontrar o pai
         novoCusto.classList.add("mb-3", "campo-custo"); 
         novoCusto.innerHTML = `
