@@ -21,12 +21,16 @@
         <form action="{{ route('calcular') }}" method="post">
             @csrf
 
-            <div class="mb-3">
+            <div class="text-center mb-5">
                 <label for="nome_produto" class="form-label">Nome do Produto:</label>
-                <input type="text" class="form-control" id="nome_produto" name="nome_produto" value="{{ old('nome_produto', $nome_produto) }}">
+                <input type="text" class="form-control-prod" id="nome_produto" name="nome_produto" value="{{ old('nome_produto', $nome_produto) }}">
             </div>
 
+   <div class="row ms-5">
+    <div class="col">
             <div class="mb-4">
+               
+          
                 <label class="form-label d-block">Custos do Produto (R$):</label>
             
                 <div id="custos-container-base">
@@ -37,7 +41,6 @@
                             @if (count(old('custo', $custos_array)) > 1 || $index > 0)
                                 <button type="button" class="btn btn-danger btn-sm mt-2" onclick="removerCampo(this)">Remover</button>
                             @endif
-                            <hr class="my-3">
                         </div>
                     @endforeach
                 </div>
@@ -46,6 +49,9 @@
                 
                 <button type="button" class="btn btn-secondary mb-3" onclick="adicionarCampoCusto()">Adicionar Custo +</button>
             </div>
+                </div>
+                <div class="col">
+            
             <div class="mb-4">
                 <label class="form-label d-block">Taxas Adicionais (%):</label>
             
@@ -57,7 +63,6 @@
                             @if (count(old('taxa', $taxas_array)) > 1 || $index > 0)
                                 <button type="button" class="btn btn-danger btn-sm mt-2" onclick="removerCampo(this)">Remover</button>
                             @endif
-                            <hr class="my-3">
                         </div>
                     @endforeach
                 </div>
@@ -66,11 +71,14 @@
             
                 <button type="button" class="btn btn-secondary mb-3" onclick="adicionarCampoTaxa()">Adicionar Taxa +</button>
             </div>
+</div>
+   <div class="col">
             <div class="mb-3">
                 <label for="lucro" class="form-label">Lucro Desejado (%):</label>
                 <input type="number" step="0.01" class="form-control" id="lucro" name="lucro" value="{{ old('lucro', $lucro) }}" required>
             </div>
-
+</div>
+</div>
             <div class="container text-center mb-5">
                 <button type="submit" class="btn btn-primary">Calcular Preço de Venda</button>
             </div>
