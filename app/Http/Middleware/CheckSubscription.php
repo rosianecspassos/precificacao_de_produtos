@@ -4,9 +4,9 @@ namespace App\Http\Middleware;
 
 use Closure;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Carbon\Carbon;
 use Symfony\Component\HttpFoundation\Response;
-use Illuminate\Support\Facades\Auth; // <-- Importação da Facade Auth
-use Carbon\Carbon; // <-- Importação da biblioteca Carbon
 
 class CheckSubscription
 {
@@ -17,32 +17,31 @@ class CheckSubscription
      */
     public function handle(Request $request, Closure $next): Response
     {
-        // Garante que o usuário está logado. Se não estiver, o middleware 'auth' cuidará disso.
+        /** @var \App\Models\User $user */
         $user = Auth::user();
+
+        // 1. O usuário precisa estar logado
         if (!$user) {
-            return $next($request);
+            return redirect()->route('login');
         }
 
-        // 1. Assinatura ATIVA: Se a data de expiração estiver no futuro, permite o acesso.
-        if ($user->subscription_expires_at && $user->subscription_expires_at->isFuture()) {
-            return $next($request);
+        // 2. Verifica se a assinatura está expirada
+        // A coluna 'subscription_expires_at' deve existir e ser do tipo timestamp/datetime (nullable)
+        if ($user->subscription_expires_at === null || $user->subscription_expires_at->isPast()) {
+            
+            // Se a assinatura for nula (nunca pagou) OU a data for no passado (expirou)
+            
+            // Verifica se a rota ATUAL é a rota de renovação/compra. 
+            // Se o usuário já estiver na tela de renovação, não redireciona novamente
+            if ($request->routeIs('renew.show')) {
+                return $next($request); 
+            }
+
+            // Redireciona para a página de renovação, impedindo o acesso à Dashboard.
+            return redirect()->route('renew.show');
         }
 
-        // --- LÓGICA DE BLOQUEIO / REDIRECIONAMENTO ---
-
-        // 2. Evita loop de redirecionamento: Se o usuário estiver tentando acessar a própria página de renovação, permite.
-        if ($request->routeIs('renew.subscription')) {
-            return $next($request);
-        }
-
-        // 3. Usuário NOVO (Nunca assinou): subscription_expires_at é NULL.
-        if ($user->subscription_expires_at === null) {
-            // Redireciona para a página de Planos (home) para a primeira compra.
-            return redirect()->route('home');
-        }
-
-        // 4. Usuário EXPIROU (Era assinante, mas a data é passada).
-        // Redireciona para a página de renovação.
-        return redirect()->route('renew.subscription');
+        // 3. Assinatura válida: permite o acesso
+        return $next($request);
     }
 }
