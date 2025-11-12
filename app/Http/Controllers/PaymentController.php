@@ -4,34 +4,47 @@ namespace App\Http\Controllers;
 
 use App\Models\Plan;
 use App\Models\Payment;
-use App\Models\User; // Necessário se você usa $user->save()
+use App\Models\User;
 
 // IMPORTAÇÕES OBRIGATÓRIAS
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth; // <-- **ESTA** é a classe Auth correta
+use Illuminate\Support\Facades\Auth; 
+use Illuminate\Support\Facades\Session; 
+use Illuminate\Support\Facades\Log;
 use Carbon\Carbon;
 
-// Se você instalou o Stripe:
+// Configuração do Stripe
 use Stripe\Stripe;
 use Stripe\Charge;
+use Stripe\Exception\CardException;
 
 class PaymentController extends Controller
 {
     /**
+     * Define as chaves do Stripe globalmente no construtor.
+     */
+    public function __construct()
+    {
+        // =======================================================
+        // GARANTIA: Prioriza a chave de TESTE (sk_test_...) para que 
+        // cartões de teste sejam aceitos.
+        // O valor deve ser a chave que você colocou em STRIPE_SECRET_TEST no seu .env.
+        // =======================================================
+        $secretKey = env('STRIPE_SECRET_TEST', env('STRIPE_SECRET'));
+        Stripe::setApiKey($secretKey); 
+    }
+
+    /**
      * Exibe o formulário de pagamento para um plano específico.
-     *
-     * @param  \App\Models\Plan  $plan
-     * @return \Illuminate\View\View|\Illuminate\Http\RedirectResponse
      */
     public function showPaymentForm(Plan $plan)
     {
-        // VERIFICAÇÃO DE AUTENTICAÇÃO: Usando a Facade Auth::check()
+        // VERIFICAÇÃO: Se o usuário não estiver logado, redireciona para o login
         if (!Auth::check()) {
-            // Se o usuário não estiver logado, redireciona para a rota de login
+            Session::put('pending_plan_id', $plan->id);
             return redirect()->route('login');
         }
 
-        // Se estiver logado, obtém o usuário
         $user = Auth::user(); 
 
         return view('payment.show', [
@@ -41,7 +54,7 @@ class PaymentController extends Controller
     }
 
     /**
-     * Processa o pagamento via Stripe.
+     * Processa o pagamento via Stripe (usando o token gerado pelo Elements).
      */
     public function processPayment(Request $request)
     {
@@ -52,26 +65,67 @@ class PaymentController extends Controller
 
         $plan = Plan::find($request->plan_id);
         
-        // Tipagem para evitar erros de IDE, mas usando a chamada de runtime correta
         /** @var \App\Models\User $user */
         $user = Auth::user(); 
 
-        // [Omitindo lógica do Stripe por ser um trecho grande, mas focando nas variáveis do erro]
+        $amountInCents = round($plan->price * 100);
 
-        // Simulando sucesso do Stripe:
+        try {
+            // 1. Tenta criar a cobrança (Charge) usando o token
+            $charge = Charge::create([
+                'amount' => $amountInCents,
+                'currency' => 'brl', // Usamos BRL (Reais)
+                'source' => $request->stripeToken,
+                'description' => 'Assinatura do Plano: ' . $plan->name . ' - Usuário ID: ' . $user->id,
+                'receipt_email' => $user->email,
+            ]);
 
-        // 5. Simulação de Salvar o pagamento
-        $payment = new Payment();
-        $payment->user_id = $user->id; // Aqui está o 'user' sendo usado corretamente
-        // ... (restante dos campos)
-        $payment->save();
+            if ($charge->status !== 'succeeded') {
+                 throw new \Exception('O Stripe recusou a cobrança. Status: ' . $charge->status);
+            }
 
+            // 2. Salva o registro do pagamento no banco
+            $payment = new Payment();
+            $payment->user_id = $user->id; 
+            $payment->plan_id = $plan->id;
+            $payment->stripe_id = $charge->id;
+            $payment->amount = $plan->price;
+            $payment->status = 'completed'; 
+            $payment->payment_method = 'card';
+            $payment->save();
 
-        // 6. Atualiza a data de expiração da assinatura do usuário
-        // Certifique-se que você rodou a migração para adicionar 'subscription_expires_at' na tabela users!
-        $user->subscription_expires_at = now()->addDays($plan->duration_days); 
-        $user->save(); // Aqui está o 'save' sendo usado no objeto User
+            // 3. Atualiza a data de expiração da assinatura do usuário
+            $user->subscription_expires_at = now()->addDays($plan->duration_days); 
+            $user->save(); 
 
-        // [Omitindo redirecionamento]
+            // 4. Limpa a sessão de plano pendente
+            Session::forget('pending_plan_id');
+
+            // 5. Redireciona para a Dashboard com mensagem de sucesso
+            Session::flash('success', 'Pagamento realizado com sucesso! Sua assinatura está ativa.');
+            return redirect()->route('dashboard');
+
+        } catch (CardException $e) {
+            // Trata erros de cartão, como recusa
+            Session::flash('error', 'O seu cartão foi recusado: ' . $e->getMessage());
+            return redirect()->route('payment.show', $plan->id);
+
+        } catch (\Exception $e) {
+            // Trata erros de conexão, chave, ou outros erros inesperados
+            Log::error('Erro Stripe ao processar pagamento: ' . $e->getMessage());
+            Session::flash('error', 'Ocorreu um erro inesperado no pagamento. Por favor, tente novamente mais tarde.');
+            return redirect()->route('payment.show', $plan->id);
+        }
+    }
+
+    // Rotas de retorno
+    public function success()
+    {
+        return redirect()->route('dashboard')->with('success', 'Pagamento confirmado e assinatura ativada!');
+    }
+
+    public function cancel()
+    {
+        return redirect()->route('home')->with('error', 'O pagamento foi cancelado ou não foi concluído.');
     }
 }
