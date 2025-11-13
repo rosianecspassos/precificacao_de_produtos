@@ -9,7 +9,7 @@
   <body>
     <div class="container-fluid">
       <div class = "container mt-4"> 
-
+    @include('layouts.header')
 </div> 
 <div class="container-fluid">
 @yield('content')
