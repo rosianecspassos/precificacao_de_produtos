@@ -6,17 +6,18 @@ use App\Models\Plan;
 use App\Models\Payment;
 use App\Models\User;
 
-// IMPORTAÇÕES OBRIGATÓRIAS
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth; 
 use Illuminate\Support\Facades\Session; 
 use Illuminate\Support\Facades\Log;
 use Carbon\Carbon;
+use Illuminate\Database\QueryException; // Importado para capturar o erro exato do DB
 
 // Configuração do Stripe
 use Stripe\Stripe;
 use Stripe\Charge;
 use Stripe\Exception\CardException;
+use Stripe\Exception\ApiErrorException;
 
 class PaymentController extends Controller
 {
@@ -25,12 +26,12 @@ class PaymentController extends Controller
      */
     public function __construct()
     {
-        // =======================================================
-        // GARANTIA: Prioriza a chave de TESTE (sk_test_...) para que 
-        // cartões de teste sejam aceitos.
-        // O valor deve ser a chave que você colocou em STRIPE_SECRET_TEST no seu .env.
-        // =======================================================
         $secretKey = env('STRIPE_SECRET_TEST', env('STRIPE_SECRET'));
+        
+        if (empty($secretKey)) {
+             Log::error('Chave secreta do Stripe não configurada no .env!');
+        }
+        
         Stripe::setApiKey($secretKey); 
     }
 
@@ -39,93 +40,137 @@ class PaymentController extends Controller
      */
     public function showPaymentForm(Plan $plan)
     {
-        // VERIFICAÇÃO: Se o usuário não estiver logado, redireciona para o login
-        if (!Auth::check()) {
-            Session::put('pending_plan_id', $plan->id);
-            return redirect()->route('login');
-        }
-
-        $user = Auth::user(); 
+        $user = Auth::user();
 
         return view('payment.show', [
             'plan' => $plan,
-            'user' => $user,
+            'user' => $user, 
         ]);
     }
 
     /**
-     * Processa o pagamento via Stripe (usando o token gerado pelo Elements).
+     * Processa o pagamento via Stripe.
+     * Lógica: Logado -> Dashboard | Convidado -> Register
      */
     public function processPayment(Request $request)
     {
-        $request->validate([
+        // 1. Validação dos dados
+        $validationRules = [
             'stripeToken' => 'required',
             'plan_id' => 'required|exists:plans,id',
-        ]);
+            'name' => Auth::check() ? 'nullable|string' : 'required|string|max:255',
+        ];
+
+        if (!Auth::check()) {
+             $validationRules['email'] = 'required|email'; 
+        }
+        
+        $request->validate($validationRules);
 
         $plan = Plan::find($request->plan_id);
         
-        /** @var \App\Models\User $user */
-        $user = Auth::user(); 
+        // 2. Definição do Usuário/Email
+        if (Auth::check()) {
+            /** @var \App\Models\User $user */
+            $user = Auth::user(); 
+            $receiptEmail = $user->email;
+        } else {
+            $user = null;
+            $receiptEmail = $request->email; 
+        }
 
         $amountInCents = round($plan->price * 100);
 
         try {
-            // 1. Tenta criar a cobrança (Charge) usando o token
+            // 3. Tenta criar a cobrança (Charge)
             $charge = Charge::create([
                 'amount' => $amountInCents,
-                'currency' => 'brl', // Usamos BRL (Reais)
+                'currency' => 'brl',
                 'source' => $request->stripeToken,
-                'description' => 'Assinatura do Plano: ' . $plan->name . ' - Usuário ID: ' . $user->id,
-                'receipt_email' => $user->email,
+                'description' => 'Assinatura do Plano: ' . $plan->name . ' - Nome: ' . $request->name,
+                'receipt_email' => $receiptEmail,
             ]);
 
             if ($charge->status !== 'succeeded') {
                  throw new \Exception('O Stripe recusou a cobrança. Status: ' . $charge->status);
             }
 
-            // 2. Salva o registro do pagamento no banco
-            $payment = new Payment();
-            $payment->user_id = $user->id; 
-            $payment->plan_id = $plan->id;
-            $payment->stripe_id = $charge->id;
-            $payment->amount = $plan->price;
-            $payment->status = 'completed'; 
-            $payment->payment_method = 'card';
-            $payment->save();
+            // 4. PÓS-PAGAMENTO BEM-SUCEDIDO
+            if ($user) {
+                // FLUXO 1: USUÁRIO AUTENTICADO (Renovação/Upgrade)
+                
+                $payment = new Payment();
+                $payment->user_id = $user->id; 
+                $payment->plan_id = $plan->id;
+                $payment->stripe_id = $charge->id;
+                $payment->amount = $plan->price;
+                $payment->status = 'completed'; 
+                $payment->payment_method = 'card';
+                $payment->save();
 
-            // 3. Atualiza a data de expiração da assinatura do usuário
-            $user->subscription_expires_at = now()->addDays($plan->duration_days); 
-            $user->save(); 
+                // Lógica de atualização da assinatura com try/catch isolado para DB
+                try {
+                    $user->subscription_expires_at = Carbon::now()->addDays($plan->duration_days); 
+                    $user->save(); 
 
-            // 4. Limpa a sessão de plano pendente
-            Session::forget('pending_plan_id');
+                    Session::flash('success', 'Pagamento realizado com sucesso! Sua assinatura está ativa.');
+                    return redirect()->route('dashboard');
 
-            // 5. Redireciona para a Dashboard com mensagem de sucesso
-            Session::flash('success', 'Pagamento realizado com sucesso! Sua assinatura está ativa.');
-            return redirect()->route('dashboard');
+                } catch (QueryException $dbE) {
+                    // SE ESTE BLOCO FOR ACIONADO, O PROBLEMA ESTÁ NO SEU BANCO DE DADOS
+                    Log::error('ERRO CRÍTICO NO DB (SUBSCRIPTION SAVE): ' . $dbE->getMessage());
+                    
+                    // Exibe mensagem informativa, mas registra a falha no log
+                    Session::flash('error', 'Pagamento realizado, mas houve um erro ao atualizar sua assinatura no banco de dados. Por favor, contate o suporte. (Código: DB-FAIL)');
+                    return redirect()->route('dashboard');
+                }
+                
+                // O código abaixo não será executado se o try/catch for acionado
+                // Session::flash('success', 'Pagamento realizado com sucesso! Sua assinatura está ativa.');
+                // return redirect()->route('dashboard');
+
+            } else {
+                // FLUXO 2: USUÁRIO CONVIDADO (Primeira Compra)
+                
+                $paymentSuccessData = [
+                    'plan_id' => $plan->id,
+                    'name' => $request->name, 
+                    'email' => $receiptEmail, 
+                    'transaction_id' => $charge->id,
+                    'price' => $plan->price,
+                ];
+
+                $request->session()->put('payment_success_data', $paymentSuccessData);
+
+                // Redireciona para a rota de REGISTRO (cadastro)
+                return redirect()->route('register')->with('status', 'Pagamento confirmado! Crie sua conta para acessar.'); 
+            }
 
         } catch (CardException $e) {
-            // Trata erros de cartão, como recusa
             Session::flash('error', 'O seu cartão foi recusado: ' . $e->getMessage());
-            return redirect()->route('payment.show', $plan->id);
+            return back()->withInput($request->except('stripeToken')); 
 
+        } catch (ApiErrorException $e) {
+            Log::error('Erro Stripe API: ' . $e->getMessage());
+            Session::flash('error', 'Ocorreu um erro na comunicação com o Stripe: ' . $e->getMessage());
+            return back()->withInput($request->except('stripeToken'));
+            
         } catch (\Exception $e) {
-            // Trata erros de conexão, chave, ou outros erros inesperados
-            Log::error('Erro Stripe ao processar pagamento: ' . $e->getMessage());
-            Session::flash('error', 'Ocorreu um erro inesperado no pagamento. Por favor, tente novamente mais tarde.');
-            return redirect()->route('payment.show', $plan->id);
+            Log::error('ERRO GERAL DE PROCESSAMENTO: ' . $e->getMessage());
+            Session::flash('error', 'Ocorreu um erro inesperado. Por favor, tente novamente mais tarde.');
+            return back()->withInput($request->except('stripeToken'));
         }
     }
-
-    // Rotas de retorno
-    public function success()
+    
+    public function cancel(Request $request) 
     {
-        return redirect()->route('dashboard')->with('success', 'Pagamento confirmado e assinatura ativada!');
+        Session::flash('error', 'A transação foi cancelada ou falhou.');
+        return redirect()->route('home'); 
     }
 
-    public function cancel()
+    public function processRenewal(Request $request)
     {
-        return redirect()->route('home')->with('error', 'O pagamento foi cancelado ou não foi concluído.');
+        Session::flash('success', 'Renovação processada com sucesso.');
+        return redirect()->route('dashboard');
     }
 }
