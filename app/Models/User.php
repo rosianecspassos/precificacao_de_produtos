@@ -6,15 +6,25 @@ use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Laravel\Fortify\TwoFactorAuthenticatable;
+use Laravel\Jetstream\HasProfilePhoto;
 use Laravel\Sanctum\HasApiTokens;
+use Laravel\Cashier\Billable; // 1. IMPORTAÇÃO (o Composer precisa que o pacote exista)
+
+
+// ...
 
 class User extends Authenticatable
 {
-    use HasApiTokens, HasFactory, Notifiable;
+    use HasApiTokens;
+    use HasFactory;
+    use HasProfilePhoto;
+    use Notifiable;
+    use TwoFactorAuthenticatable;
+    use Billable; 
 
     /**
-     * Os atributos que são atribuíveis em massa (Mass Assignable).
-     * ESTA É A LINHA QUE PRECISA SER CORRIGIDA: adicione 'subscription_expires_at'
+     * The attributes that are mass assignable.
      *
      * @var array<int, string>
      */
@@ -22,28 +32,40 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
-        'subscription_expires_at', // <--- ADICIONE ESTA LINHA
+        'stripe_id', // CRÍTICO: Adicionado para permitir a criação de convidado
+        'subscription_expires_at', // CRÍTICO: Adicionado para permitir a atualização
     ];
 
-    /**
-     * Os atributos que devem ser ocultados para serialização.
-     *
-     * @var array<int, string>
-     */
+
     protected $hidden = [
         'password',
         'remember_token',
+        'two_factor_secret',
+        'two_factor_recovery_codes',
     ];
 
     /**
-     * Os atributos que devem ser 'cast' (convertidos) para tipos nativos.
-     * É boa prática converter campos de data para 'datetime'.
+     * The attributes that should be cast.
      *
      * @var array<string, string>
      */
-    protected $casts = [
+protected $casts = [
         'email_verified_at' => 'datetime',
-        'subscription_expires_at' => 'datetime', // <--- ADICIONE ESTA LINHA TAMBÉM
         'password' => 'hashed',
+        'subscription_expires_at' => 'datetime', // CRÍTICO: Adiciona este cast
     ];
+    /**
+     * The accessors to append to the model's array form.
+     *
+     * @var array<int, string>
+     */
+    protected $appends = [
+        'profile_photo_url',
+    ];
+
+    // Se o usuário não está logado, ele é considerado "guest" e precisa se cadastrar
+    public function isGuest()
+    {
+        return $this->id === null;
+    }
 }

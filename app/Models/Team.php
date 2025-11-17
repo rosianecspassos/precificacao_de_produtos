@@ -39,10 +39,8 @@ class Team extends JetstreamTeam
      *
      * @return array<string, string>
      */
-    protected function casts(): array
-    {
-        return [
-            'personal_team' => 'boolean',
-        ];
+     protected $casts = [
+        'personal_team' => 'boolean',
+    ];
     }
-}
+

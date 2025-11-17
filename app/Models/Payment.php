@@ -4,12 +4,11 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Payment extends Model
 {
     use HasFactory;
-
+    
     /**
      * The attributes that are mass assignable.
      *
@@ -17,25 +16,26 @@ class Payment extends Model
      */
     protected $fillable = [
         'user_id',
-        'plan_id',
-        'transaction_id',
-        'payment_method',
+        'plan_id', // CRÍTICO: Adicionado (foi o campo que deu erro no SQL)
+        'stripe_id',
         'amount',
         'status',
+        'plan_slug',
+        'payment_method',
     ];
 
     /**
-     * Get the user that owns the Payment.
+     * Relação: Um pagamento pertence a um usuário
      */
-    public function user(): BelongsTo
+    public function user()
     {
         return $this->belongsTo(User::class);
     }
-
+    
     /**
-     * Get the plan that the Payment belongs to.
+     * Relação: Um pagamento pertence a um plano
      */
-    public function plan(): BelongsTo
+    public function plan()
     {
         return $this->belongsTo(Plan::class);
     }
