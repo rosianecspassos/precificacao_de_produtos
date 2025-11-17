@@ -3,36 +3,37 @@
 namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
+use App\Models\Plan;
+
 use Illuminate\Support\Facades\DB;
-use Carbon\Carbon;
 
 class PlansTableSeeder extends Seeder
 {
-    /**
-     * Preenche a tabela 'plans' com dados iniciais.
-     *
-     * @return void
-     */
     public function run()
     {
+        // desabilitar verificação de chave estrangeira
+        DB::statement('SET FOREIGN_KEY_CHECKS=0;');
+
+        DB::table('plans')->truncate();
+
+        // reativar verificação
+        DB::statement('SET FOREIGN_KEY_CHECKS=1;');
+
         DB::table('plans')->insert([
-            // Plano Padrão
             [
-                'name' => 'Plano Padrão',
-                'slug' => 'plano_padrao',
-                'price' => 19.90,
-                'description' => 'Acesso essencial ao sistema, ideal para pequenos projetos.',
-                'created_at' => Carbon::now(),
-                'updated_at' => Carbon::now(),
+                'name' => 'Básico',
+                'slug' => 'basico',
+                'price' => 29.90,
             ],
-            // Plano Premium
             [
-                'name' => 'Plano Premium',
-                'slug' => 'plano_premium',
-                'price' => 49.90,
-                'description' => 'Acesso total, recursos avançados e relatórios detalhados.',
-                'created_at' => Carbon::now(),
-                'updated_at' => Carbon::now(),
+                'name' => 'Pro',
+                'slug' => 'pro',
+                'price' => 59.90,
+            ],
+            [
+                'name' => 'Premium',
+                'slug' => 'premium',
+                'price' => 99.90,
             ],
         ]);
     }
