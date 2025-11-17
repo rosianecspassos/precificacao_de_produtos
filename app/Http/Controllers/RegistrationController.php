@@ -48,14 +48,24 @@ class RegistrationController extends Controller
         }
 
         // 3. Cria o novo usuário
-        $user = User::create([
-            'name' => $request->name,
-            'email' => $request->email,
-            'password' => Hash::make($request->password),
-            // ADIÇÃO CRUCIAL: Ativa a assinatura para o próximo mês
-            'subscription_expires_at' => Carbon::now()->addMonth(), 
-            // Você pode adicionar o 'plan_id' aqui se ele existir na tabela users
-        ]);
+// 3. Cria o novo usuário
+$user = User::create([
+    'name' => $request->name,
+    'email' => $request->email,
+    'password' => Hash::make($request->password),
+   'subscription_expires_at' => Carbon::now()->addDays($paymentData['plan_duration_days'] ?? 30),
+
+]);
+
+// Se houver um registro de pagamento, associe ao usuário
+if (!empty($paymentData['payment_id'])) {
+    $payment = \App\Models\Payment::find($paymentData['payment_id']);
+    if ($payment) {
+        $payment->user_id = $user->id;
+        $payment->save();
+    }
+}
+
 
         // 4. Limpa a sessão e faz o login
         $request->session()->forget('payment_success_data');
