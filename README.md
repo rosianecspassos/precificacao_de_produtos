@@ -310,7 +310,6 @@ Protege rotas para usuários sem assinatura ativa.
 
 
 ## Cálculo
-
                               ┌──────────────────────────┐
                               │        Usuário           │
                               │(insere custos, taxas,    │
@@ -364,7 +363,7 @@ Protege rotas para usuários sem assinatura ativa.
        4. Retorna o valor final para a View
 
 
-                                                           │
+                                              │
                                               ▼
                         ┌────────────────────────────────────┐
                         │              View Blade            │
@@ -393,7 +392,9 @@ Protege rotas para usuários sem assinatura ativa.
                                │  - Container PHP-FPM           │
                                │  - Container Nginx             │
                                │  - Container MySQL             │
-  
+                               └────────────────────────────────┘
+
+
 ✅ Resumo do Fluxo
 
 Usuário envia os custos, taxas e lucro
