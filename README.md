@@ -406,3 +406,5 @@ View exibe o resultado
 Vite compila SCSS, Bootstrap e JS
 
 Tudo roda dentro do ambiente Docker
+
+&copy; Rosiane C S Passos - Todos os direitos reservados 
