@@ -9,6 +9,7 @@ use App\Http\Controllers\RegistrationController;
 use App\Http\Middleware\CheckSubscription;
 use Illuminate\Support\Facades\Route;
 
+
 Route::get('/', [HomeController::class, 'index'])->name('home');
 
 Route::get('/acquire/{plan}', [PlanAcquisitionController::class, 'start'])->name('plan.start_acquisition');
@@ -21,6 +22,29 @@ Route::get('/payment/cancel', [PaymentController::class, 'cancel'])->name('payme
 
 Route::get('/register/finalize', [RegistrationController::class, 'showRegistrationForm'])->name('registration.show');
 Route::post('/register/finalize', [RegistrationController::class, 'registerAndFinalize'])->name('registration.finalize');
+
+
+
+Route::prefix('payment')->group(function () {
+
+    // Página de pagamento
+    Route::get('/{plan}', [PaymentController::class, 'showPaymentForm'])
+        ->name('payment.show');
+
+    // Cartão (Stripe)
+    Route::post('/process', [PaymentController::class, 'processPayment'])
+        ->name('payment.process');
+
+    // PIX (Mercado Pago)
+    Route::post('/pix', [PaymentController::class, 'createPix'])
+        ->name('payment.pix');
+
+    // Cancelamento
+    Route::get('/cancel', [PaymentController::class, 'cancel'])
+        ->name('payment.cancel');
+
+});
+
 
 Route::middleware(['auth'])->group(function () {
 
