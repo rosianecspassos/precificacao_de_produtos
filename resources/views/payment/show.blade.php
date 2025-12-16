@@ -1,214 +1,187 @@
-<!-- resources/views/payment/show.blade.php -->
 @extends('templates.home')
+
+@php
+    $stripePublicKey = config('services.stripe.key');
+@endphp
 
 @section('title', 'Checkout - ' . $plan->name)
 
 @section('content')
 
+<meta name="csrf-token" content="{{ csrf_token() }}">
+
 <div class="container my-5">
     <div class="row justify-content-center">
         <div class="col-md-8 col-lg-6">
-            <h1 class="text-center mb-4 text-2xl font-bold text-gray-800">Finalizar Assinatura</h1>
-            
-            @if (session('error'))
-                <div class="alert alert-danger" role="alert">
-                    {{ session('error') }}
+
+            <h1 class="text-center mb-4 fw-bold">Finalizar Assinatura</h1>
+
+            {{-- CARD DO PLANO --}}
+            <div class="card shadow border-0 mb-4">
+                <div class="card-header bg-primary text-white text-center">
+                    <h3 class="mb-0">{{ $plan->name }}</h3>
+                    <p class="mb-0 fs-5">
+                        R$ {{ number_format($plan->price, 2, ',', '.') }}
+                    </p>
                 </div>
-            @endif
-            
-            <div class="card shadow-lg border-0 rounded-xl">
-                <div class="card-header bg-primary text-white p-4 rounded-t-xl">
-                    <h2 class="card-title text-xl font-semibold">{{ $plan->name }}</h2>
-                    <p class="card-subtitle lead mb-0">R$ {{ number_format($plan->price, 2, ',', '.') }}</p>
-                </div>
-                
-                <div class="card-body p-5">
-                    
+
+                <div class="card-body">
+
+                    {{-- ================= PIX (MERCADO PAGO) ================= --}}
+                    <h4 class="mb-3">Pagar com Pix</h4>
+
+                    <input type="hidden" id="plan_id" value="{{ $plan->id }}">
+
+                    <button type="button" id="btnPix" class="btn btn-success w-100 mb-3">
+                        Gerar QR Code PIX
+                    </button>
+
+                    <div id="pixContainer" style="display:none; text-align:center;">
+                        <p class="fw-bold">Escaneie o QR Code:</p>
+
+                        {{-- QR CODE --}}
+                        <img id="pixQrCode" src="" width="250" class="mb-3">
+
+                        {{-- CÓDIGO COPIA E COLA --}}
+                        <p class="fw-bold">Ou copie o código Pix:</p>
+                        <textarea id="pixCode"
+                                  class="form-control"
+                                  rows="4"
+                                  readonly></textarea>
+                    </div>
+
+                    <div id="statusBox" class="mt-3 p-2 rounded bg-light text-center">
+                        Status: Aguardando…
+                    </div>
+
+                    <hr class="my-4">
+
+                    {{-- ================= CARTÃO (STRIPE) ================= --}}
+                    <h4 class="mb-3">Pagar com Cartão</h4>
+
                     <form id="payment-form" action="{{ route('payment.process') }}" method="POST">
                         @csrf
 
-                        <!-- Campos Escondidos -->
                         <input type="hidden" name="plan_id" value="{{ $plan->id }}">
-                        
-                        <!-- 1. CAMPO NOME COMPLETO (Corrigido para name="name" para validação do Laravel) -->
+                        <input type="hidden" name="stripeToken" id="stripeTokenInput">
+
+                        {{-- Nome --}}
                         <div class="mb-3">
-                            <label for="card-holder-name" class="form-label font-medium">Nome no Cartão</label>
-                            <input type="text" 
-                                name="name" 
-                                id="card-holder-name" 
-                                class="form-control @error('name') is-invalid @enderror" 
-                                value="{{ old('name', $user ? $user->name : '') }}" 
-                                required 
-                                autocomplete="cc-name">
-                            @error('name')
-                                <div class="invalid-feedback">{{ $message }}</div>
-                            @enderror
+                            <label class="form-label">Nome no Cartão</label>
+                            <input type="text"
+                                   id="card-holder-name"
+                                   class="form-control"
+                                   required>
                         </div>
 
-                        <!-- 2. CAMPO DO CARTÃO DE CRÉDITO (STRIPE ELEMENTS: CAMPO ÚNICO) -->
-                        <div class="mb-4">
-                            <label for="card-element" class="form-label font-medium">Detalhes do Cartão de Crédito</label>
-                            <!-- O campo único do Stripe será montado neste div -->
-                            <div id="card-element" class="stripe-element-field">
-                                <!-- Elementos de formulário do Stripe serão inseridos aqui. -->
-                            </div>
-                            <!-- Usado para exibir erros do cartão -->
-                            <div id="card-errors" role="alert" class="text-danger mt-2"></div>
+                        {{-- Stripe Element --}}
+                        <div class="mb-3">
+                            <label class="form-label">Dados do Cartão</label>
+                            <div id="card-element" class="stripe-element"></div>
+                            <div id="card-errors" class="text-danger mt-2"></div>
                         </div>
 
-                        <!-- 3. MENSAGEM DE REDIRECIONAMENTO -->
-                        @if (!$user)
-                        <div class="alert alert-info small mb-4">Você será redirecionado para o Cadastro após o pagamento ser confirmado.</div>
-                        @endif
-                        
-                        <!-- Botão de Submissão -->
-                        <button type="submit" class="btn btn-success w-100 py-3 text-lg font-bold" id="card-button">
+                        <button type="submit"
+                                id="card-button"
+                                class="btn btn-primary w-100">
                             Pagar R$ {{ number_format($plan->price, 2, ',', '.') }}
                         </button>
                     </form>
-                    
+
                 </div>
             </div>
+
         </div>
     </div>
 </div>
 
-<!-- INCLUSÃO OBRIGATÓRIA DO SCRIPT DO STRIPE -->
-<script src="https://js.stripe.com/v3/"></script>
-
-<!-- BLOCO DE INICIALIZAÇÃO DO STRIPE (GLOBAL) -->
-<script>
-    // Variáveis globais para o Stripe
-    var stripe;
-    var elements;
-    
-    // CRÍTICO: Tenta carregar a chave de API
-    const stripePublicKey = "{{ env('STRIPE_KEY_PUBLIC') }}";
-    
-    if (!stripePublicKey || stripePublicKey === '') {
-        console.error("ERRO CRÍTICO: A chave pública 'STRIPE_KEY_PUBLIC' não está carregando. Verifique seu .env e execute 'php artisan config:clear'.");
-        
-        const cardErrors = document.getElementById('card-errors');
-        if (cardErrors) cardErrors.textContent = "ERRO: Chave de pagamento ausente. Execute 'php artisan config:clear'.";
-        
-        const cardButton = document.getElementById('card-button');
-        if (cardButton) cardButton.disabled = true;
-        
-    } else {
-        // Inicializa o Stripe e Elements apenas se a chave estiver presente
-        stripe = Stripe(stripePublicKey); 
-        elements = stripe.elements();
-    }
-</script>
-
-<!-- BLOCO DE ESTILO E LÓGICA DE PAGAMENTO -->
+{{-- ================= ESTILO ================= --}}
 <style>
-    /* Aplicando o estilo de input do Bootstrap/Tailwind aos campos do Stripe */
-    .stripe-element-field {
-        /* Aumenta a altura e o padding para parecer um campo maior */
-        height: 50px; /* Altura aumentada */
-        padding: 0.75rem 1rem; /* Padding maior */
-        
-        border: 1px solid #ced4da;
-        border-radius: 0.25rem;
-        background-color: #fff;
-        transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
-        
-        /* Z-INDEX EXTREMO (MANTIDO) para garantir clique */
-        z-index: 9999999 !important; 
-        position: relative !important;
-        transform: translateZ(0); 
-    }
-
-    .stripe-element-field:focus-within {
-        border-color: #80bdff;
-        outline: 0;
-        box-shadow: 0 0 0 0.25rem rgba(0, 123, 255, 0.25);
-    }
+.stripe-element {
+    padding: 12px;
+    border: 1px solid #ced4da;
+    border-radius: 6px;
+    background: #fff;
+}
 </style>
 
+{{-- ================= SCRIPTS ================= --}}
+<script src="https://js.stripe.com/v3/"></script>
+
 <script>
-    document.addEventListener('DOMContentLoaded', function () {
-        
-        // Se o Stripe não foi inicializado (chave falhou), não prossiga.
-        if (typeof stripe === 'undefined' || typeof elements === 'undefined') {
+document.addEventListener("DOMContentLoaded", function () {
+
+    /* ================= PIX — MERCADO PAGO ================= */
+
+    const btnPix = document.getElementById("btnPix");
+
+    btnPix.addEventListener("click", async () => {
+
+        const planId = document.getElementById("plan_id").value;
+        const csrf = document.querySelector('meta[name="csrf-token"]').content;
+
+        document.getElementById("statusBox").innerText = "Status: Gerando PIX…";
+
+        try {
+            const response = await fetch("{{ route('payment.pix') }}", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "X-CSRF-TOKEN": csrf,
+                    "Accept": "application/json"
+                },
+                body: JSON.stringify({ plan_id: planId })
+            });
+
+            const data = await response.json();
+
+            if (!data.qr_code_base64) {
+                alert("Erro ao gerar PIX");
+                return;
+            }
+
+            document.getElementById("pixContainer").style.display = "block";
+            document.getElementById("pixQrCode").src =
+                "data:image/png;base64," + data.qr_code_base64;
+
+            document.getElementById("pixCode").value = data.qr_code;
+
+            document.getElementById("statusBox").innerText =
+                "Status: Aguardando pagamento…";
+
+        } catch (e) {
+            console.error(e);
+            alert("Erro ao gerar PIX");
+            document.getElementById("statusBox").innerText = "Status: Erro";
+        }
+    });
+
+    /* ================= STRIPE ================= */
+
+    const stripe = Stripe("{{ $stripePublicKey }}");
+    const elements = stripe.elements();
+    const card = elements.create("card");
+    card.mount("#card-element");
+
+    const form = document.getElementById("payment-form");
+
+    form.addEventListener("submit", async function (e) {
+        e.preventDefault();
+
+        const { token, error } = await stripe.createToken(card, {
+            name: document.getElementById("card-holder-name").value
+        });
+
+        if (error) {
+            document.getElementById("card-errors").innerText = error.message;
             return;
         }
 
-        const formattedPrice = `R$ {{ number_format($plan->price, 2, ',', '.') }}`;
-        const cardErrors = document.getElementById('card-errors');
-        
-        const style = {
-            base: {
-                fontSize: '16px',
-                color: '#495057',
-                fontFamily: 'system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", "Liberation Sans", sans-serif',
-                '::placeholder': {
-                    color: '#aab7c4',
-                },
-            },
-            invalid: {
-                color: '#dc3545', /* Cor de erro do Bootstrap */
-                iconColor: '#dc3545',
-            }
-        };
-
-        // 1. Cria o elemento único do cartão
-        const card = elements.create('card', { 
-            style: style,
-            hidePostalCode: true // CRÍTICO: Remove o campo CEP/Postal Code
-        });
-        card.mount('#card-element');
-
-
-        // 2. Lida com erros em tempo real
-        card.on('change', function(event) {
-            if (event.error) {
-                cardErrors.textContent = event.error.message;
-            } else {
-                cardErrors.textContent = '';
-            }
-        });
-
-        // 3. Lida com o envio do formulário
-        const form = document.getElementById('payment-form');
-        const cardHolderNameInput = document.getElementById('card-holder-name');
-        const cardButton = document.getElementById('card-button');
-
-        form.addEventListener('submit', async function(event) {
-            event.preventDefault();
-            
-            cardButton.disabled = true;
-            cardButton.textContent = 'Processando...';
-
-            // Captura o valor do campo de nome corrigido
-            const nameValue = cardHolderNameInput.value;
-
-            // Cria o Token de Pagamento 
-            const { token, error } = await stripe.createToken(card, {
-                name: nameValue,
-            });
-
-            if (error) {
-                // Exibe erro para o usuário e reabilita o botão
-                cardErrors.textContent = error.message;
-                cardButton.disabled = false;
-                cardButton.textContent = `Pagar ${formattedPrice}`;
-            } else {
-                // Adiciona o token ao formulário e o envia para o Laravel
-                const hiddenInput = document.createElement('input');
-                hiddenInput.setAttribute('type', 'hidden');
-                hiddenInput.setAttribute('name', 'stripeToken');
-                hiddenInput.setAttribute('value', token.id);
-                form.appendChild(hiddenInput);
-
-                // Envia o formulário
-                form.submit();
-            }
-        });
-        
-        // Foca no campo do cartão
-        card.focus();
+        document.getElementById("stripeTokenInput").value = token.id;
+        form.submit();
     });
+
+});
 </script>
+
 @endsection
