@@ -348,32 +348,51 @@ Este fluxo permite total controle do pagamento sem redirecionamento para página
                    ┌────────────────────────────────────────────────┐
                    │      Lógica de Cálculo (Markup Inverso)        │
                    └────────────────────────────────────────────────┘
+# Cálculo do Valor do Produto
 
-       1. Recebe os dados:
-             - nome_produto
-             - custos[] (lista)
-             - taxas[]  (lista)
-             - lucro% (margem desejada)
+Este fluxo descreve como a aplicação calcula o valor total e o custo unitário de um produto, considerando custos, taxas, margem de lucro e quantidade de unidades.
 
-       2. Limpa valores vazios:
-             custos = array_filter(...)
-             taxas  = array_filter(...)
+1) Recebe os dados do formulário:
+nome_produto
+custos[] (lista de custos do produto)
+taxas[] (lista de taxas aplicáveis)
+lucro% (margem desejada)
+qtdeProd (quantidade de unidades, inteiro ≥ 1)
 
-       3. Calcula:
-             custo_total = soma(custos)
-             taxa_total  = soma(taxas)
+2) Limpa valores vazios:
+custos = array_filter(custos)
+taxas  = array_filter(taxas)
 
-             taxa_decimal  = taxa_total / 100
-             lucro_decimal = lucro / 100
+3) Valida quantidade de unidades:
+Se qtdeProd não existir ou for menor que 1, define qtdeProd = 1
+Garante que não haja divisão por zero
 
-             denominador = 1 - taxa_decimal - lucro_decimal
+4) Calcula os valores:
+custo_total = soma(custos)
+taxa_total = soma(taxas)
 
-             se denominador > 0:
-                valor_produto = custo_total / denominador
-             senão:
-                valor_produto = 0
+5) Converte para decimal:
+taxa_decimal  = taxa_total / 100
+lucro_decimal = lucro / 100
 
-       4. Retorna o valor final para a View
+
+6) Calcula denominador:
+denominador = 1 - taxa_decimal - lucro_decimal
+
+7) Calcula valor do produto somente se denominador > 0:
+if denominador > 0:
+    valor_produto = custo_total / denominador
+else:
+    valor_produto = 0
+
+8) Calcula custo unitário por unidade:
+custo_unitario = valor_produto / qtdeProd
+
+9) Retorna os valores para a View:
+valor_produto (total do produto)
+custo_unitario (por unidade)
+qtdeProd (quantidade)
+
 
 
                                               │
