@@ -269,44 +269,57 @@ A aplicação segue uma arquitetura moderna baseada em Laravel 12, com separaç�
                        │   - Data de expiração                                  │
                        │   - Botões gerenciar/cancelar                          │
                        └────────────────────────────────────────────────────────┘
+                       ## 🔷 Pagamento via PIX (Mercado Pago)
 
-## 🎯 Processo de Assinatura (Fluxo Resumido)
-1. Planos
+O módulo de pagamento via PIX foi implementado utilizando a **API de Pagamentos do Mercado Pago (Checkout Transparente)**.
 
-Seeders criam os planos → tabela plans.
+### Fluxo resumido:
+1. O usuário clica em **"Gerar QR Code PIX"**
+2. A aplicação envia a requisição para o backend
+3. O backend cria um pagamento PIX no Mercado Pago
+4. O Mercado Pago retorna o QR Code
+5. O QR Code é exibido para o usuário
+6. O pagamento fica com status **pendente** até a confirmação
 
-2. Usuário seleciona um plano
+Este fluxo permite total controle do pagamento sem redirecionamento para páginas externas.
 
-Página /planos → botão "Assinar".
+## 🧩 Diagrama de Arquitetura — Pagamento PIX
 
-3. Início de aquisição
-
-Controller recebe o plano e leva para página de pagamento.
-
-4. Stripe Checkout
-
-Pagamento processado no Stripe.
-
-5. Criação da assinatura
-
-Após retorno (ou webhook), grava:
-
-usuário
-
-plano
-
-status
-
-data de expiração
-
-6. Dashboard
-
-Exibe o status da assinatura.
-
-7. Middleware
-
-Protege rotas para usuários sem assinatura ativa.
-
+```text
+┌──────────────┐
+│   Usuário    │
+│ (Navegador)  │
+└──────┬───────┘
+       │ Clique em "Gerar PIX"
+       ▼
+┌──────────────────────┐
+│   View (Blade)       │
+│ JavaScript (Fetch)   │
+└──────┬───────────────┘
+       │ POST /payment/pix
+       ▼
+┌──────────────────────┐
+│ PaymentController    │
+│ createPix()          │
+└──────┬───────────────┘
+       │ SDK Mercado Pago
+       ▼
+┌──────────────────────┐
+│ Mercado Pago API     │
+│ Pagamento PIX        │
+└──────┬───────────────┘
+       │ QR Code PIX
+       ▼
+┌──────────────────────┐
+│ Retorno JSON         │
+│ (qr_code / base64)   │
+└──────┬───────────────┘
+       │
+       ▼
+┌──────────────────────┐
+│ Exibição do QR Code  │
+│ na Interface         │
+└──────────────────────┘
 
 
 ## Cálculo
