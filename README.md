@@ -1,5 +1,6 @@
 <!--<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>-->
-# Aplicação Precificação
+# Precifique fácil
+## Precificação de produtos e serviços
 ## Sobre 
 Aplicação desenvolvida em Laravel 12 para cálculo inteligente de precificação de produtos. O sistema permite inserir múltiplos custos, taxas e o percentual de lucro desejado, calculando automaticamente o preço final ideal de venda. A plataforma realiza o cálculo baseado na fórmula real de markup inverso, considerando o impacto de custos fixos, taxas percentuais e margem de lucro para determinar o valor correto que garante a rentabilidade planejada.
 O projeto utiliza Bootstrap, SCSS, Docker e Vite para uma arquitetura moderna, modular e de fácil expansão.
