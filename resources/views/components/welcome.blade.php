@@ -6,7 +6,7 @@
         // Adicione uma classe para ajudar a função removerCampo a encontrar o pai
         novoCusto.classList.add("mb-3", "campo-custo"); 
         novoCusto.innerHTML = `
-            <input type="number" step="0.01" class="form-control" name="custo[]" value="" required>
+            <input type="number" step="0.01" class="form-control-custo" name="custo[]" value="" required>
             <button type="button" class="btn btn-danger btn-sm mt-2" onclick="removerCampo(this)">Remover</button>
             <hr class="my-3">
         `;
@@ -20,7 +20,7 @@
         // Adicione uma classe para ajudar a função removerCampo a encontrar o pai
         novaTaxa.classList.add("mb-3", "campo-taxa");
         novaTaxa.innerHTML = `
-            <input type="number" step="0.01" class="form-control" name="taxa[]" value="" required>
+            <input type="number" step="0.01" class="form-control-taxa" name="taxa[]" value="" required>
             <button type="button" class="btn btn-danger btn-sm mt-2" onclick="removerCampo(this)">Remover</button>
             <hr class="my-3">
         `;
@@ -41,7 +41,7 @@
     <x-application-logo class="block h-12 w-auto" />
 
     <h1 class="mt-8 text-2xl font-medium text-gray-900">
-  Bem-vindo ao nosso sistema de precificação de produtos!
+  Bem-vindo precifique fácil!
     </h1>
 
     <p class="mt-6 text-gray-500 leading-relaxed">
