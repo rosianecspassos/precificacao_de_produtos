@@ -112,8 +112,10 @@ class PaymentController extends Controller
             : 'test_user_' . uniqid() . '@email.com';
 
         try {
+           
+            
             $client = new PaymentClient();
-
+        
             $payment = $client->create([
                 "transaction_amount" => (float) $plan->price,
                 "description" => "Assinatura {$plan->name}",
