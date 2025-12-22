@@ -40,7 +40,8 @@
                         <p class="fw-bold">Escaneie o QR Code:</p>
 
                         {{-- QR CODE --}}
-                        <img id="pixQrCode" src="" width="250" class="mb-3">
+                     <img id="pixQrCode" src="{{  $plan->qr_code }}" width="250" class="mb-3"> 
+
 
                         {{-- CÓDIGO COPIA E COLA --}}
                         <p class="fw-bold">Ou copie o código Pix:</p>
