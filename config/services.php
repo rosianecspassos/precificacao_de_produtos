@@ -41,6 +41,7 @@ return [
 
 'mercadopago' => [
     'access_token' => env('MP_ACCESS_TOKEN'),
+    'setAccessToken' => env('MERCADOPAGO_ACCESS_TOKEN'),
 ],
 
 
