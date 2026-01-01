@@ -102,9 +102,8 @@ O backend é responsável por criar os pagamentos, enquanto o frontend apenas co
 │ na Interface         │
 └──────────────────────┘
 
-```md
 
----
+
 
 #### 🧩 Diagrama de Arquitetura — Cartão de Crédito
 
@@ -137,8 +136,7 @@ O backend é responsável por criar os pagamentos, enquanto o frontend apenas co
 │ Sistema              │
 │ Atualiza assinatura  │
 └──────────────────────┘
-```md
----
+
 
 
 ##  ⚠️ Observações
