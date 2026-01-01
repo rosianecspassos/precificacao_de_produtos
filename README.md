@@ -107,6 +107,7 @@ O backend é responsável por criar os pagamentos, enquanto o frontend apenas co
 
 ```md
 
+
 #### 🧩 Diagrama de Arquitetura — Cartão de Crédito
 
 ```text
@@ -151,6 +152,7 @@ O backend é responsável por criar os pagamentos, enquanto o frontend apenas co
 - Cartão de crédito pode retornar status aprovado, recusado ou em análise
 - Recomenda-se uso de ambiente **TEST** durante desenvolvimento
 
+
 ### 🔢 Módulo de Cálculo de Precificação
 
 O módulo de cálculo de precificação foi desenvolvido para auxiliar empreendedores e pequenos negócios a definirem corretamente o **preço de venda** de seus produtos ou serviços, garantindo lucro e evitando prejuízos.
@@ -190,6 +192,8 @@ Ele centraliza todas as regras de negócio no backend, assegurando **segurança,
 
 O módulo segue o padrão **MVC (Model–View–Controller)** do Laravel, promovendo organização, escalabilidade e boas práticas de desenvolvimento.
 
+
+
 ```text
 ┌───────────────┐
 │     Usuário   │
@@ -221,4 +225,4 @@ O módulo segue o padrão **MVC (Model–View–Controller)** do Laravel, promov
 │ Retorno para a View    │
 │ Resultado do cálculo   │
 └────────────────────────┘
-
+```md
