@@ -2,17 +2,12 @@
 
 namespace App\Models;
 
-use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Fortify\TwoFactorAuthenticatable;
 use Laravel\Jetstream\HasProfilePhoto;
 use Laravel\Sanctum\HasApiTokens;
-use Laravel\Cashier\Billable; // 1. IMPORTAÇÃO (o Composer precisa que o pacote exista)
-
-
-// ...
 
 class User extends Authenticatable
 {
@@ -21,10 +16,9 @@ class User extends Authenticatable
     use HasProfilePhoto;
     use Notifiable;
     use TwoFactorAuthenticatable;
-    use Billable; 
 
     /**
-     * The attributes that are mass assignable.
+     * Atributos permitidos para atribuição em massa.
      *
      * @var array<int, string>
      */
@@ -32,30 +26,23 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
-        'stripe_id', // CRÍTICO: Adicionado para permitir a criação de convidado
-        'subscription_expires_at', // CRÍTICO: Adicionado para permitir a atualização
+        'subscription_expires_at',
     ];
 
-
+    /**
+     * Atributos ocultos na serialização.
+     *
+     * @var array<int, string>
+     */
     protected $hidden = [
         'password',
         'remember_token',
-        'two_factor_secret',
         'two_factor_recovery_codes',
+        'two_factor_secret',
     ];
 
     /**
-     * The attributes that should be cast.
-     *
-     * @var array<string, string>
-     */
-protected $casts = [
-        'email_verified_at' => 'datetime',
-        'password' => 'hashed',
-        'subscription_expires_at' => 'datetime', // CRÍTICO: Adiciona este cast
-    ];
-    /**
-     * The accessors to append to the model's array form.
+     * Atributos adicionados automaticamente.
      *
      * @var array<int, string>
      */
@@ -63,9 +50,42 @@ protected $casts = [
         'profile_photo_url',
     ];
 
-    // Se o usuário não está logado, ele é considerado "guest" e precisa se cadastrar
-    public function isGuest()
+    /**
+     * Casts dos atributos.
+     *
+     * @return array<string, string>
+     */
+    protected function casts(): array
     {
-        return $this->id === null;
+        return [
+            'email_verified_at'        => 'datetime',
+            'subscription_expires_at' => 'datetime',
+            'password'                => 'hashed',
+        ];
+    }
+
+    /* =====================================================
+     * RELACIONAMENTOS
+     * ===================================================== */
+
+    /**
+     * Um usuário pode ter vários pagamentos.
+     */
+    public function payments()
+    {
+        return $this->hasMany(Payment::class);
+    }
+
+    /* =====================================================
+     * MÉTODOS DE ASSINATURA
+     * ===================================================== */
+
+    /**
+     * Verifica se o usuário possui assinatura ativa.
+     */
+    public function hasActiveSubscription(): bool
+    {
+        return $this->subscription_expires_at !== null
+            && $this->subscription_expires_at->isFuture();
     }
 }

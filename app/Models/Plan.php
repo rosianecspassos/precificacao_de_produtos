@@ -10,7 +10,7 @@ class Plan extends Model
     use HasFactory;
 
     /**
-     * The attributes that are mass assignable.
+     * Atributos permitidos para atribuição em massa.
      *
      * @var array<int, string>
      */
