@@ -66,7 +66,7 @@ O backend é responsável por criar os pagamentos, enquanto o frontend apenas co
 
 #### 🧩 Diagrama de Arquitetura — Pagamento PIX
 
-
+```text
 ┌──────────────┐
 │   Usuário    │
 │ (Navegador)  │
@@ -102,9 +102,9 @@ O backend é responsável por criar os pagamentos, enquanto o frontend apenas co
 │ na Interface         │
 └──────────────────────┘
 
-
+```md
 #### 🧩 Diagrama de Arquitetura — Cartão de Crédito
-
+```text
 
 ┌──────────────┐
 │   Usuário    │
@@ -134,6 +134,9 @@ O backend é responsável por criar os pagamentos, enquanto o frontend apenas co
 │ Sistema              │
 │ Atualiza assinatura  │
 └──────────────────────┘
+
+```md
+
 
 
 ##  ⚠️ Observações
@@ -182,7 +185,7 @@ Ele centraliza todas as regras de negócio no backend, assegurando **segurança,
 
 O módulo segue o padrão **MVC (Model–View–Controller)** do Laravel, promovendo organização, escalabilidade e boas práticas de desenvolvimento.
 
-
+```text
 ┌───────────────┐
 │     Usuário   │
 └───────┬───────┘
@@ -213,4 +216,4 @@ O módulo segue o padrão **MVC (Model–View–Controller)** do Laravel, promov
 │ Retorno para a View    │
 │ Resultado do cálculo   │
 └────────────────────────┘
-
+```md
