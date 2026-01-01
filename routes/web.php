@@ -1,59 +1,68 @@
 <?php
 
-use App\Http\Controllers\HomeController;
-use App\Http\Controllers\PaymentController;
-use App\Http\Controllers\PlanAcquisitionController;
-use App\Http\Controllers\ContentController;
-use App\Http\Controllers\CalculoController;
-use App\Http\Controllers\RegistrationController;
-use App\Http\Middleware\CheckSubscription;
 use Illuminate\Support\Facades\Route;
 
+use App\Http\Controllers\HomeController;
+use App\Http\Controllers\PaymentController;
+use App\Http\Controllers\RegistrationController;
+use App\Http\Controllers\ContentController;
+use App\Http\Controllers\CalculoController;
+use App\Http\Middleware\CheckSubscription;
 
-Route::get('/', [HomeController::class, 'index'])->name('home');
+/*
+|--------------------------------------------------------------------------
+| ROTAS PÚBLICAS
+|--------------------------------------------------------------------------
+*/
 
-Route::get('/acquire/{plan}', [PlanAcquisitionController::class, 'start'])->name('plan.start_acquisition');
+// Página inicial – lista de planos
+Route::get('/', [HomeController::class, 'index'])
+    ->name('home');
 
-Route::get('/payment/{plan}', [PaymentController::class, 'showPaymentForm'])->name('payment.show');
-Route::post('/payment/process', [PaymentController::class, 'processPayment'])->name('payment.process');
+// Página de pagamento (seleção de plano)
+Route::get('/payment/{plan}', [PaymentController::class, 'showPaymentForm'])
+    ->name('payment.show');
 
-Route::get('/payment/success', [PaymentController::class, 'success'])->name('payment.success');
-Route::get('/payment/cancel', [PaymentController::class, 'cancel'])->name('payment.cancel');
+// Processar pagamento (PIX / Boleto)
+Route::post('/payment/process', [PaymentController::class, 'processPayment'])
+    ->name('payment.process');
 
-Route::get('/register/finalize', [RegistrationController::class, 'showRegistrationForm'])->name('registration.show');
-Route::post('/register/finalize', [RegistrationController::class, 'registerAndFinalize'])->name('registration.finalize');
+// Cancelar pagamento
+Route::post('/payment/cancel', [PaymentController::class, 'cancelPayment'])
+    ->name('payment.cancel');
 
+// Registro após pagamento
+Route::get('/register', [RegistrationController::class, 'showRegistrationForm'])
+    ->name('register.show');
 
-
-Route::prefix('payment')->group(function () {
-
-    // Página de pagamento
-    Route::get('/{plan}', [PaymentController::class, 'showPaymentForm'])
-        ->name('payment.show');
-
-    // Cartão (Stripe)
-    Route::post('/process', [PaymentController::class, 'processPayment'])
-        ->name('payment.process');
-
-    // PIX (Mercado Pago)
-    Route::post('/pix', [PaymentController::class, 'createPix'])
-        ->name('payment.pix');
-
-    // Cancelamento
-    Route::get('/cancel', [PaymentController::class, 'cancel'])
-        ->name('payment.cancel');
-
-});
+Route::post('/register', [RegistrationController::class, 'processRegistration'])
+    ->name('register.process');
 
 
+/*
+|--------------------------------------------------------------------------
+| ROTAS PROTEGIDAS (USUÁRIO LOGADO)
+|--------------------------------------------------------------------------
+*/
 Route::middleware(['auth'])->group(function () {
 
-    Route::get('/renovar', [ContentController::class, 'showRenewForm'])->name('renew.show');
-    Route::post('/renovar/processar', [PaymentController::class, 'processRenewal'])->name('renewal.process');
+    // Página para renovar assinatura
+    Route::get('/renovar', [ContentController::class, 'showRenewForm'])
+        ->name('renew.show');
 
-    Route::middleware(CheckSubscription::class)->group(function () {
-        Route::get('/dashboard', [ContentController::class, 'dashboard'])->name('dashboard');
-         // Rota para o formulário de cálculo de preço
-        Route::post('/calcular', [CalculoController::class, 'create'])->name('calcular');
+    /*
+    |--------------------------------------------------------------------------
+    | ROTAS PROTEGIDAS POR ASSINATURA ATIVA
+    |--------------------------------------------------------------------------
+    */
+    Route::middleware([CheckSubscription::class])->group(function () {
+
+        // Dashboard
+        Route::get('/dashboard', [ContentController::class, 'dashboard'])
+            ->name('dashboard');
+
+        // Cálculo de preço
+        Route::post('/calcular', [CalculoController::class, 'create'])
+            ->name('calcular');
     });
 });
