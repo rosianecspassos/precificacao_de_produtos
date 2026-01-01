@@ -107,7 +107,7 @@ O backend é responsável por criar os pagamentos, enquanto o frontend apenas co
 
 ```md
 
-## 🧩 Diagrama de Arquitetura — Cartão de Crédito
+#### 🧩 Diagrama de Arquitetura — Cartão de Crédito
 
 ```text
 ┌──────────────┐
@@ -150,4 +150,75 @@ O backend é responsável por criar os pagamentos, enquanto o frontend apenas co
 - Pagamentos PIX permanecem pendentes até confirmação
 - Cartão de crédito pode retornar status aprovado, recusado ou em análise
 - Recomenda-se uso de ambiente **TEST** durante desenvolvimento
+
+### 🔢 Módulo de Cálculo de Precificação
+
+O módulo de cálculo de precificação foi desenvolvido para auxiliar empreendedores e pequenos negócios a definirem corretamente o **preço de venda** de seus produtos ou serviços, garantindo lucro e evitando prejuízos.
+
+Ele centraliza todas as regras de negócio no backend, assegurando **segurança, consistência dos cálculos e fácil manutenção**.
+
+---
+
+### 🧠 Como funciona
+
+1. O usuário acessa o formulário de cálculo após autenticação e verificação de assinatura ativa.
+2. Os dados de custo, despesas, impostos e margem de lucro são enviados via requisição **POST**.
+3. O sistema valida todas as informações recebidas.
+4. O cálculo do preço de venda é realizado no backend.
+5. O resultado final é exibido ao usuário de forma clara e objetiva.
+
+---
+
+#### 📊 Itens considerados no cálculo
+
+- Custos fixos  
+- Custos variáveis  
+- Percentual de impostos  
+- Margem de lucro desejada  
+
+---
+
+#### 🔐 Segurança e controle de acesso
+
+- Acesso protegido por autenticação (`auth`)
+- Middleware garante que apenas usuários com assinatura ativa utilizem o cálculo
+- Validações feitas exclusivamente no backend
+
+---
+
+#### 🏗️ Diagrama de Arquitetura do Módulo de Cálculo
+
+O módulo segue o padrão **MVC (Model–View–Controller)** do Laravel, promovendo organização, escalabilidade e boas práticas de desenvolvimento.
+
+```text
+┌───────────────┐
+│     Usuário   │
+└───────┬───────┘
+        │
+        │ Preenche formulário de cálculo
+        ▼
+┌────────────────────────┐
+│   View (Blade)         │
+│ Formulário de Cálculo  │
+└─────────┬──────────────┘
+          │ POST /calcular
+          ▼
+┌────────────────────────┐
+│   CalculoController    │
+│ - Validação dos dados  │
+│ - Regras de negócio    │
+│ - Cálculo do preço     │
+└─────────┬──────────────┘
+          │
+          ▼
+┌────────────────────────┐
+│ Camada de Lógica       │
+│ (Fórmulas de cálculo)  │
+└─────────┬──────────────┘
+          │
+          ▼
+┌────────────────────────┐
+│ Retorno para a View    │
+│ Resultado do cálculo   │
+└────────────────────────┘
 
