@@ -1,4 +1,3 @@
-@php use Illuminate\Support\Facades\Route; @endphp
 <!DOCTYPE html>
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
 <head>
@@ -12,39 +11,34 @@
     <link rel="preconnect" href="https://fonts.bunny.net">
     <link href="https://fonts.bunny.net/css?family=figtree:400,500,600&display=swap" rel="stylesheet" />
 
-    <!-- Vite -->
-    @vite(['resources/css/app.css', 'resources/js/style.js'])
+    <!-- Scripts -->
+    @vite(['resources/css/app.css', 'resources/js/app.js'])
 
+    <!-- Styles -->
+    @livewireStyles
 </head>
 <body class="font-sans antialiased">
-
-    <!-- Banner (se existir) -->
     <x-banner />
 
     <div class="min-h-screen bg-gray-100">
-
-        <!-- Navigation (SOME APENAS NA ROTA DE PAGAMENTO) -->
-        @if (Route::currentRouteName() !== 'payment.show')
-            @include('navigation-menu')
-        @endif
+        @livewire('navigation-menu')
 
         <!-- Page Heading -->
         @if (isset($header))
-        <header class="bg-white shadow">
-            <div class="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
-                {{ $header }}
-            </div>
-        </header>
+            <header class="bg-white shadow">
+                <div class="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
+                    {{ $header }}
+                </div>
+            </header>
         @endif
 
         <!-- Page Content -->
         <main>
-            {{ $slot }}
+            @yield('content')
         </main>
-
     </div>
 
     @stack('modals')
-
+    @livewireScripts
 </body>
 </html>
