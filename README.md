@@ -10,7 +10,7 @@ Toda a lógica de pagamento é centralizada no Mercado Pago, garantindo maior si
 
 ---
 
-## 🚀 Funcionalidades principais
+##### 🚀 Funcionalidades principais
 
 - Cadastro e exibição de planos de assinatura
 - Checkout transparente (sem redirecionamento)
@@ -25,7 +25,7 @@ Toda a lógica de pagamento é centralizada no Mercado Pago, garantindo maior si
 
 ---
 
-## 🛠 Tecnologias utilizadas
+##### 🛠 Tecnologias utilizadas
 
 - PHP 8+
 - Laravel
