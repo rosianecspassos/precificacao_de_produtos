@@ -140,3 +140,14 @@ O backend é responsável por criar os pagamentos, enquanto o frontend apenas co
 └──────────────────────┘
 
 
+---
+
+
+
+```md
+## ⚠️ Observações
+
+- Pagamentos PIX permanecem pendentes até confirmação
+- Cartão de crédito pode retornar status aprovado, recusado ou em análise
+- Recomenda-se uso de ambiente **TEST** durante desenvolvimento
+
