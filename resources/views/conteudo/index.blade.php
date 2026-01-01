@@ -1,5 +1,5 @@
 @extends('templates.home')
-@section('title', 'Precificação de Produtos')
+            @section('title', 'Precificação de Produtos')
 
 {{-- CDN do Bootstrap deve ser carregada no templates.home, mas mantive aqui por segurança --}}
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
@@ -54,5 +54,5 @@
         </div>
         @endforelse
     </div>
-</div>
-@endsection
+    </div>
+    @endsection
