@@ -65,7 +65,7 @@ O backend é responsável por criar os pagamentos, enquanto o frontend apenas co
 
 #### 🧩 Diagrama de Arquitetura — Pagamento PIX
 
-```text
+
 ┌──────────────┐
 │   Usuário    │
 │ (Navegador)  │
@@ -102,15 +102,12 @@ O backend é responsável por criar os pagamentos, enquanto o frontend apenas co
 └──────────────────────┘
 
 
----
 
-
-```md
 
 
 #### 🧩 Diagrama de Arquitetura — Cartão de Crédito
 
-```text
+
 ┌──────────────┐
 │   Usuário    │
 │ (Navegador)  │
@@ -141,12 +138,8 @@ O backend é responsável por criar os pagamentos, enquanto o frontend apenas co
 └──────────────────────┘
 
 
----
 
-
-
-```md
-## ⚠️ Observações
+##  ⚠️ Observações
 
 - Pagamentos PIX permanecem pendentes até confirmação
 - Cartão de crédito pode retornar status aprovado, recusado ou em análise
@@ -193,8 +186,6 @@ Ele centraliza todas as regras de negócio no backend, assegurando **segurança,
 O módulo segue o padrão **MVC (Model–View–Controller)** do Laravel, promovendo organização, escalabilidade e boas práticas de desenvolvimento.
 
 
-
-```text
 ┌───────────────┐
 │     Usuário   │
 └───────┬───────┘
@@ -225,4 +216,3 @@ O módulo segue o padrão **MVC (Model–View–Controller)** do Laravel, promov
 │ Retorno para a View    │
 │ Resultado do cálculo   │
 └────────────────────────┘
-```md
