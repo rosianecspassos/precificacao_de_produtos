@@ -105,9 +105,10 @@ Ele centraliza todas as regras de negócio no backend, assegurando **segurança,
 
 ---
 
-#### 🧩 Diagrama de Arquitetura — Pagamento PIX
+#### 🧩 Diagramas de Arquitetura 
 
 ```text
+#### Pagamento PIX
 ┌──────────────┐
 │   Usuário    │
 │ (Navegador)  │
@@ -144,7 +145,7 @@ Ele centraliza todas as regras de negócio no backend, assegurando **segurança,
 └──────────────────────┘
 
 
-#### 🧩 Diagrama de Arquitetura — Cartão de Crédito
+#### Cartão de Crédito
 ```text
 
 ┌──────────────┐
@@ -176,10 +177,7 @@ Ele centraliza todas as regras de negócio no backend, assegurando **segurança,
 │ Atualiza assinatura  │
 └──────────────────────┘
 
-#### 🏗️ Diagrama de Arquitetura do Módulo de Cálculo
-
-O módulo segue o padrão **MVC (Model–View–Controller)** do Laravel, promovendo organização, escalabilidade e boas práticas de desenvolvimento.
-
+####  Módulo de Cálculo
 
 ┌───────────────┐
 │     Usuário   │
