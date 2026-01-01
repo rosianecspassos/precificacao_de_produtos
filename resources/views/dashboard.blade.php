@@ -12,7 +12,4 @@
             </div>
         </div>
     </div>
-    <div class="container mt-5">
-    @include('layouts.footer')
-    </div>
 </x-app-layout>
