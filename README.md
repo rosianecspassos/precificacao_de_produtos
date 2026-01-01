@@ -1,2 +1,2 @@
-## Precifique Fácil
-# Aplicação para precificar produtos
+# Precifique Fácil
+## Aplicação para precificar produtos
