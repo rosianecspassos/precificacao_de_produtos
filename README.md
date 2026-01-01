@@ -104,6 +104,11 @@ Ele centraliza todas as regras de negócio no backend, assegurando **segurança,
 - Validações feitas exclusivamente no backend
 
 ---
+### Fórmulas 
+---
+
+	​
+
 
 #### 🧩 Diagramas de Arquitetura 
 
