@@ -14,8 +14,12 @@ return new class extends Migration
             $table->string('email')->unique();
             $table->timestamp('email_verified_at')->nullable();
             $table->string('password');
-
+        
+            $table->string('subscription_plan')->nullable();
             $table->timestamp('subscription_expires_at')->nullable();
+            $table->boolean('is_active')->default(true);
+            $table->rememberToken();
+            // Two-Factor Authentication                
 
             $table->text('two_factor_secret')->nullable();
             $table->text('two_factor_recovery_codes')->nullable();
