@@ -106,20 +106,17 @@ Ele centraliza todas as regras de negócio no backend, assegurando **segurança,
 ---
 ### Fórmulas 
 
-Custo Total = Σ custos
-Taxa Total (%) = Σ taxas
+-Custo Total = Σ custos
+-Taxa Total (%) = Σ taxas
 
-Taxa Decimal = Taxa Total / 100
-Lucro Decimal = Lucro / 100
+-Taxa Decimal = Taxa Total / 100
+-Lucro Decimal = Lucro / 100
 
-Denominador = 1 − Taxa Decimal − Lucro Decimal
+-Denominador = 1 − Taxa Decimal − Lucro Decimal
 
-Valor de Venda = Custo Total / Denominador
+-Valor de Venda = Custo Total / Denominador
 
-Preço Unitário = Valor de Venda / Quantidade
-
-	​
-
+-Preço Unitário = Valor de Venda / Quantidade
 
 #### 🧩 Diagramas de Arquitetura 
 
