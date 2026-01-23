@@ -118,7 +118,6 @@ Ele centraliza todas as regras de negócio no backend, assegurando **segurança,
 
 ### 🧩 Diagramas de Arquitetura
 
-#### Pagamento PIX
 ```text
 ┌──────────────┐
 │   Usuário    │
@@ -156,7 +155,8 @@ Ele centraliza todas as regras de negócio no backend, assegurando **segurança,
 └──────────────────────┘
 ```md
 
-#### Cartão de Crédito
+
+
 
 ```text
 ┌──────────────┐
@@ -189,7 +189,7 @@ Ele centraliza todas as regras de negócio no backend, assegurando **segurança,
 └──────────────────────┘
 ```md
 
-#### Módulo de Cálculo
+
 
 ```text
 ┌───────────────┐
