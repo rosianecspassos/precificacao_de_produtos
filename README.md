@@ -153,10 +153,6 @@ Ele centraliza todas as regras de negócio no backend, assegurando **segurança,
 │ Exibição do QR Code  │
 │ na Interface         │
 └──────────────────────┘
-```md
-
-
-
 
 
 ┌──────────────┐
