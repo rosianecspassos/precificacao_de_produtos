@@ -158,7 +158,7 @@ Ele centraliza todas as regras de negócio no backend, assegurando **segurança,
 
 
 
-```text
+
 ┌──────────────┐
 │   Usuário    │
 │ (Navegador)  │
@@ -191,7 +191,7 @@ Ele centraliza todas as regras de negócio no backend, assegurando **segurança,
 
 
 
-```text
+
 ┌───────────────┐
 │     Usuário   │
 └───────┬───────┘
