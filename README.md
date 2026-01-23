@@ -23,7 +23,6 @@ Toda a lógica de pagamento é centralizada no Mercado Pago, garantindo maior si
 - Estrutura preparada para Webhooks
 - Código organizado seguindo boas práticas do Laravel
 
----
 
 #### 🛠 Tecnologias utilizadas
 
@@ -76,9 +75,9 @@ O módulo de cálculo de precificação foi desenvolvido para auxiliar empreende
 
 Ele centraliza todas as regras de negócio no backend, assegurando **segurança, consistência dos cálculos e fácil manutenção**.
 
----
 
-### 🧠 Como funciona
+
+#### 🧠 Como funciona
 
 1. O usuário acessa o formulário de cálculo após autenticação e verificação de assinatura ativa.
 2. Os dados de custo, despesas, impostos e margem de lucro são enviados via requisição **POST**.
@@ -86,7 +85,6 @@ Ele centraliza todas as regras de negócio no backend, assegurando **segurança,
 4. O cálculo do preço de venda é realizado no backend.
 5. O resultado final é exibido ao usuário de forma clara e objetiva.
 
----
 
 #### 📊 Itens considerados no cálculo
 
@@ -95,7 +93,6 @@ Ele centraliza todas as regras de negócio no backend, assegurando **segurança,
 - Percentual de impostos  
 - Margem de lucro desejada  
 
----
 
 #### 🔐 Segurança e controle de acesso
 
@@ -103,8 +100,8 @@ Ele centraliza todas as regras de negócio no backend, assegurando **segurança,
 - Middleware garante que apenas usuários com assinatura ativa utilizem o cálculo
 - Validações feitas exclusivamente no backend
 
----
-### Fórmulas 
+
+#### Fórmulas 
 
 - Custo Total = Σ custos
 - Taxa Total (%) = Σ taxas
@@ -118,10 +115,11 @@ Ele centraliza todas as regras de negócio no backend, assegurando **segurança,
 
 - Preço Unitário = Valor de Venda / Quantidade
 
-#### 🧩 Diagramas de Arquitetura 
 
-```text
+### 🧩 Diagramas de Arquitetura
+
 #### Pagamento PIX
+```text
 ┌──────────────┐
 │   Usuário    │
 │ (Navegador)  │
@@ -156,11 +154,11 @@ Ele centraliza todas as regras de negócio no backend, assegurando **segurança,
 │ Exibição do QR Code  │
 │ na Interface         │
 └──────────────────────┘
-
+```md
 
 #### Cartão de Crédito
-```text
 
+```text
 ┌──────────────┐
 │   Usuário    │
 │ (Navegador)  │
@@ -189,9 +187,11 @@ Ele centraliza todas as regras de negócio no backend, assegurando **segurança,
 │ Sistema              │
 │ Atualiza assinatura  │
 └──────────────────────┘
+```md
 
-####  Módulo de Cálculo
+#### Módulo de Cálculo
 
+```text
 ┌───────────────┐
 │     Usuário   │
 └───────┬───────┘
@@ -223,3 +223,4 @@ Ele centraliza todas as regras de negócio no backend, assegurando **segurança,
 │ Resultado do cálculo   │
 └────────────────────────┘
 ```md
+
