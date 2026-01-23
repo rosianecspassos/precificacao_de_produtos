@@ -214,5 +214,5 @@ Ele centraliza todas as regras de negócio no backend, assegurando **segurança,
 │ Retorno para a View    │
 │ Resultado do cálculo   │
 └────────────────────────┘
-```md
+
 
