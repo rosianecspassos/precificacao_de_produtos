@@ -8,7 +8,6 @@ O sistema permite que usuários escolham planos, realizem pagamentos via **PIX o
 
 Toda a lógica de pagamento é centralizada no Mercado Pago, garantindo maior simplicidade, segurança e facilidade de manutenção.
 
----
 
 ##### 🚀 Funcionalidades principais
 
@@ -61,7 +60,7 @@ O backend é responsável por criar os pagamentos, enquanto o frontend apenas co
 5. O Mercado Pago processa o pagamento
 6. O sistema recebe o status da transação
 7. A assinatura é ativada conforme o status
----
+
 ##  ⚠️ Observações
 
 - Pagamentos PIX permanecem pendentes até confirmação
@@ -215,5 +214,5 @@ Ele centraliza todas as regras de negócio no backend, assegurando **segurança,
 │ Retorno para a View    │
 │ Resultado do cálculo   │
 └────────────────────────┘
-
+```md
 
